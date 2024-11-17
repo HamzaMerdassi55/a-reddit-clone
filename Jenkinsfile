@@ -24,7 +24,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/HamzaMerdassi55/a-reddit-clone.git'
             }
         }
-        stage("SonarQube Analysis") {
+        stage("Sonarqube Analysis") {
             steps {
                 withSonarQubeEnv('SonarQube-Server') {
                     sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Reddit-Clone-CI \
