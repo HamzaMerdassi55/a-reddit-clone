@@ -9,12 +9,12 @@ pipeline {
         APP_NAME = "reddit-clone-pipeline"
         RELEASE = "1.0.0"
         DOCKER_USER = "hamza6"
-        DOCKER_PASS = 'dockerhub'
-        IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
-        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+        DOCKER_PASS = 'dockerhub' 
+        IMAGE_NAME = "${DOCKER_USER}" + "/" "${APP_NAME}"
+        IMAGE_TAG = "${RELEASE}-${env.BUILD_NUMBER}"
     }
     stages {
-        stage('clean workspace') {
+        stage('Clean Workspace') {
             steps {
                 cleanWs()
             }
@@ -24,7 +24,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/HamzaMerdassi55/a-reddit-clone.git'
             }
         }
-        stage("Sonarqube Analysis") {
+        stage("SonarQube Analysis") {
             steps {
                 withSonarQubeEnv('SonarQube-Server') {
                     sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Reddit-Clone-CI \
@@ -35,18 +35,22 @@ pipeline {
         stage("Quality Gate") {
             steps {
                 script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'SonarQube-Token'
+                    def qualityGate = waitForQualityGate()
+                    if (qualityGate.status != 'OK') {
+                        error "Quality gate failed: ${qualityGate.status}"
+                    }
                 }
             }
         }
         stage('Install Dependencies') {
             steps {
-                sh "npm install"
+                sh 'npm install'
             }
         }
-        stage('TRIVY FS SCAN') {
+        stage('Trivy FS Scan') {
             steps {
-                sh "trivy fs . > trivyfs.txt"
-             }
-         }
+                sh 'trivy fs . > trivyfs.txt'
+            }
+        }
+    }
 }
