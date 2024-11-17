@@ -76,7 +76,14 @@ pipeline {
                       sh "docker rmi ${IMAGE_NAME}:latest"
                  }
              }
-         }    
+         }
+	stage ("Trigger CD Pipeline") {
+             steps {
+                 script {
+                    sh "curl -v -k --user clouduser:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'ec2-15-237-174-252.eu-west-3.compute.amazonaws.com:8080/job/Reddit-Clone-CD/buildWithParameters?token=gitops-token'"
+                 }
+            }
+         }
     }
     post {
        always {
